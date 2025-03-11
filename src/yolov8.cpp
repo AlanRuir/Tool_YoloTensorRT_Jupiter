@@ -124,7 +124,7 @@ void YoloV8::detect(cv::Mat& frame, std::vector<DetectResult>& results)
     float x_factor = image.cols / static_cast<float>(input_width_);
     float y_factor = image.rows / static_cast<float>(input_height_);
 
-    cv::Mat blob = cv::dnn::blobFromImage(image, 1 / 255.0, cv::Size(input_width_, input_height_), cv::Scalar(0, 0, 0), true, false);
+    cv::Mat blob = cv::dnn::blobFromImage(image, 1 / 255.0, cv::Size(input_width_, input_height_), cv::Scalar(0, 0, 0), true, false); // 计算blob，用作输入
 
     cudaError_t err = cudaMemcpyAsync(buffer_[0], blob.ptr<float>(), input_height_ * input_width_ * 3 * sizeof(float), cudaMemcpyHostToDevice, stream_);
     if (err != cudaSuccess)
@@ -154,9 +154,10 @@ void YoloV8::detect(cv::Mat& frame, std::vector<DetectResult>& results)
     std::vector<int>      class_ids;
     std::vector<float>    confidences;
 
-    cv::Mat dout(84, 8400, CV_32F, prob_.data());
-    cv::Mat det_output = dout.t(); // (8400x84)
+    cv::Mat dout(84, 8400, CV_32F, prob_.data()); // 将检测结果prob_转换为8400x84的矩阵
+    cv::Mat det_output = dout.t();                // 矩阵转置
 
+    /* 循环遍历检测结果，筛选出置信度大于阈值的检测结果 */
     for (int i = 0; i < det_output.rows; ++i)
     {
         cv::Mat   class_score = det_output.row(i).colRange(4, 84);
@@ -182,6 +183,7 @@ void YoloV8::detect(cv::Mat& frame, std::vector<DetectResult>& results)
         }
     }
 
+    /* 对检测结果进行非极大值抑制，去除重复的检测结果 */
     std::vector<int> indexes;
     cv::dnn::NMSBoxes(boxes, confidences, 0.25, 0.45, indexes);
     for (int i = 0; i < indexes.size(); ++i)
@@ -191,7 +193,7 @@ void YoloV8::detect(cv::Mat& frame, std::vector<DetectResult>& results)
         dr.box             = boxes[index];
         dr.class_id        = class_ids[index];
         dr.score           = confidences[index];
-        cv::rectangle(frame, dr.box, cv::Scalar(0, 0, 255), 1, 8);
+        cv::rectangle(frame, dr.box, cv::Scalar(0, 255, 0), 1, 8);
         results.push_back(dr);
     }
 

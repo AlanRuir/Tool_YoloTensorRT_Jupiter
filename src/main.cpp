@@ -16,6 +16,11 @@ int main(int argc, char* argv[])
         std::cerr << "无法打开摄像头" << std::endl;
         return -1;
     }
+
+    // 设置摄像头分辨率
+    cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);  // 设置宽度为 640
+    cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480); // 设置高度为 480
+
     std::cout << "摄像头已打开" << std::endl;
 
     cv::Mat                   frame;
@@ -34,7 +39,7 @@ int main(int argc, char* argv[])
         for (auto& dr : results)
         {
             cv::Rect box = dr.box;
-            cv::putText(frame, class_names[dr.class_id], cv::Point(box.tl().x, box.tl().y - 10), cv::FONT_HERSHEY_PLAIN, 1.0, cv::Scalar(0, 0, 255), 2);
+            cv::putText(frame, class_names[dr.class_id], cv::Point(box.tl().x, box.tl().y + 10), cv::FONT_HERSHEY_PLAIN, 1.0, cv::Scalar(0, 255, 0), 2);
         }
 
         cv::imshow("frame", frame);
