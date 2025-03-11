@@ -136,7 +136,7 @@ void YoloV8::detect(cv::Mat& frame, std::vector<DetectResult>& results)
     context_->setTensorAddress("images", buffer_[0]);
     context_->setTensorAddress("output0", buffer_[1]);
 
-    if (!context_->executeV2(buffer_))
+    if (!context_->executeV2(buffer_)) // 执行推理
     {
         std::cerr << "TensorRT inference failed" << std::endl;
         exit(-1);
